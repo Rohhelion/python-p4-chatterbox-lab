@@ -1,26 +1,22 @@
-from flask import Flask, request, make_response, jsonify
+from flask import Flask
 from flask_cors import CORS
-from flask_migrate import Migrate
-
-from models import db, Message
+from .models import db
+from .routes import messages_bp
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///app.db'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.json.compact = False
-
 CORS(app)
-migrate = Migrate(app, db)
 
+# Database configuration
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///messages.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+# Initialize the database
 db.init_app(app)
 
-@app.route('/messages')
-def messages():
-    return ''
-
-@app.route('/messages/<int:id>')
-def messages_by_id(id):
-    return ''
+# Register the messages blueprint
+app.register_blueprint(messages_bp, url_prefix='/api')
 
 if __name__ == '__main__':
-    app.run(port=5555)
+    with app.app_context():
+        db.create_all()
+    app.run(debug=True)
